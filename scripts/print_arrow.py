@@ -30,7 +30,7 @@ def read_and_print_labels(file_path):
 if __name__ == "__main__":
     # Ensure a filename is provided as the first argument
     if len(sys.argv) < 2:
-        print("Usage: python script_name.py <arrow_file>")
+        print("Usage: python print_arrow.py <arrow_file>")
         sys.exit(1)
     
     # Get the filename from the command-line argument

@@ -1,6 +1,7 @@
 #include "PcapFileDevice.h"
 #include "Packet.h"
 #include "IPv4Layer.h"
+#include <IPv6Layer.h>
 #include <iostream>
 #include <string>
 
@@ -64,8 +65,17 @@ int main(int argc, char *argv[]) {
         }
 
         pcpp::Packet parsedPacket(&rawPacket);
+        int ipversion = 0;
         auto *ipLayer = parsedPacket.getLayerOfType<pcpp::IPv4Layer>();
-        if (ipLayer != nullptr && (ipLayer->getIPv4Header()->ipVersion == 4 || ipLayer->getIPv4Header()->ipVersion == 6) ) {
+        if (ipLayer != nullptr) {
+            ipversion = 4;
+        } else {
+            auto *ipv6Layer = parsedPacket.getLayerOfType<pcpp::IPv6Layer>();
+            if (ipv6Layer != nullptr) {
+                ipversion = 6;
+            }
+        }
+        if (ipversion != 0) {
             if (parsedPacket.isPacketOfType(pcpp::TCP) ||
                 parsedPacket.isPacketOfType(pcpp::UDP) ||
                 parsedPacket.isPacketOfType(pcpp::ICMP)) {

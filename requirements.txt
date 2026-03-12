@@ -1,4 +1,4 @@
-torch
+torch==2.9.1
 matplotlib
 seaborn
 scipy
@@ -6,14 +6,14 @@ pcap_splitter
 scapy
 scikit-learn
 python-dateutil
-transformers
-datasets
+transformers==4.57.3
+datasets==3.1.0
 tqdm
 packaging
 graphviz
 fsspec
-pyarrow
-deepspeed
-accelerate
+pyarrow==22.0.0
+accelerate==1.12.0
 tensorboard
 torchinfo
+pytest

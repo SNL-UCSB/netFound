@@ -39,7 +39,7 @@ uint8_t getTcpFields(const pcpp::tcphdr *tcpheader) {
     return flags;
 }
 
-int process_file(const std::string input_file, const std::string output_file, bool tcpoptions_flag) {
+int process_file(const std::string input_file, const std::string output_file, bool tcpoptions_flag, bool no_payload_flag) {
     // Open the input pcap file
     auto *reader = pcpp::IFileReaderDevice::getReader(input_file);
     if (reader == nullptr) {
@@ -349,7 +349,8 @@ int process_file(const std::string input_file, const std::string output_file, bo
         }
 
         // data: get first 12 bytes of payload unless it's smaller, pad with zeros if data_len < 12
-        size_t payload_len = std::min(data_len, static_cast<size_t>(12));
+        // if no payload - fill with 0s to maintain data structure
+        size_t payload_len = no_payload_flag ? 0 : std::min(data_len, static_cast<size_t>(12));
         for (int i = 0; i < payload_len; i++) {
             outputFileStream.write(reinterpret_cast<const char*>(&data[i]), sizeof(data[i]));
         }
@@ -368,23 +369,27 @@ int process_file(const std::string input_file, const std::string output_file, bo
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 3 || argc > 4) {
-        std::cout << "Usage: " << argv[0] << " <input folder> <output folder> [tcpoptions_flag]" << std::endl;
+    if (argc < 3 || argc > 5) {
+        std::cout << "Usage: " << argv[0] << " <input folder> <output folder> [tcpoptions_flag] [no_payload_flag]" << std::endl;
         return 1;
     }
 
     std::string input_folder(argv[1]);
     std::string output_folder(argv[2]);
     bool tcpoptions_flag = false;
-    if (argc == 4) {
+    bool no_payload_flag = false;
+    if (argc >= 4) {
         tcpoptions_flag = std::stoi(argv[3]);
+    }
+    if (argc == 5) {
+        no_payload_flag = std::stoi(argv[4]);
     }
 
     // for each file in the input folder, process it and write to the output folder
     for (const auto &entry : std::filesystem::directory_iterator(input_folder)) {
         std::string input_file = entry.path().string();
         std::string output_file = output_folder + "/" + entry.path().filename().string();
-        process_file(input_file, output_file, tcpoptions_flag);
+        process_file(input_file, output_file, tcpoptions_flag, no_payload_flag);
     }
 
     return 0;

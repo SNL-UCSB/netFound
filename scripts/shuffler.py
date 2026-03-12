@@ -25,7 +25,7 @@ def shuffle_arrow_file(input_path, output_path, seed=42):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: python shuffle_arrow.py <input_file> <output_file> [seed]")
+        print("Usage: python shuffler.py <input_file> <output_file> [seed]")
         sys.exit(1)
     
     input_file = sys.argv[1]

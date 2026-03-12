@@ -183,7 +183,6 @@ def get_bursts_from_flow_file(inpt_file):
                             get_int_from_byte(f.read(1)),
                         ]
                     )
-                # currFlowRow.append(file.read(12))  # payload
                 currFlowRow.append(get_int_from_byte(f.read(12), byte_order="big"))
                 flow_rows.append(currFlowRow)
         except ValueError:

@@ -7,6 +7,7 @@ import pyarrow.ipc as ipc
 def merge_arrow_files(input_folder, output_file):
     # Get all the Arrow files in the specified folder
     input_files = [os.path.join(input_folder, f) for f in os.listdir(input_folder) if f.endswith('.arrow')]
+    print(f"Found {len(input_files)} Arrow files in the folder.")
 
     # get schema
     first_file = input_files[0]

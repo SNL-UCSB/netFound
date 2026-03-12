@@ -2,10 +2,13 @@
 venv/
 **/cmake-build-debug
 **/.PVS-Studio
+*/**/*.arrow
 */**/*.pcap
 */**/*.pcapng
 */**/*.so
-data/test/*
+!data/test/pretraining/raw/imap.pcap
+!data/test/finetuning/raw/benign/imap1.pcap
+!data/test/finetuning/raw/malicious/imap2.pcap
 */**/__pycache__
 */**/*.c
 build/
@@ -14,3 +17,5 @@ src/pre_process/3_field_extraction
 models/
 example.log
 **/.env
+.vscode
+.pytest_cache
