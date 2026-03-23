@@ -120,17 +120,3 @@ python3 scripts/preprocess_data.py --input_folder folder_name --action pretrain 
 python3 scripts/3_extract_fields.py input.pcap output.pcap 1
 ```
 - Ensure you use a **config file that includes TCPOptions processing** (e.g., `configs/DefaultConfigWithTCPOptions.json`). 
-## How to cite
-```
-@misc{guthula2024netfoundfoundationmodelnetwork,
-      title={netFound: Foundation Model for Network Security},
-      author={Satyandra Guthula and Roman Beltiukov and Navya Battula and Wenbo Guo and Arpit Gupta and Inder Monga},
-      year={2024},
-      eprint={2310.17025},
-      archivePrefix={arXiv},
-      primaryClass={cs.NI},
-      url={https://arxiv.org/abs/2310.17025},
-}
-```
-## Acknowledgements
-NSF Awards CNS-2323229, OAC-2126327, and OAC2126281 supported this work. This research used resources at the National Energy Research Scientific Computing Center (NERSC), a DOE Office of Science User Facility supported by the Office of Science of the U.S. Department of Energy under Contract No. DE-AC02-05CH11231 using NERSC award NERSC DDR-ERCAP0029768. Additionally, we would like to thank Cisco Research for their support.
