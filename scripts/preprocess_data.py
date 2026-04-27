@@ -44,19 +44,19 @@ def get_base_directory(args):
 def preprocess_pretrain(args):
     base_directory = get_base_directory(args)
     input_folder = args.input_folder
-    run([f"{base_directory}/src/pre_process/1_filter.sh", f"{input_folder}/raw", f"{input_folder}/filtered"])
-    run([f"{base_directory}/src/pre_process/2_pcap_splitting.sh", f"{input_folder}/filtered", f"{input_folder}/split"])
-    run([f"{base_directory}/src/pre_process/3_extract_fields.sh", f"{input_folder}/split", f"{input_folder}/extracted", "1" if args.tcp_options else ""])
+    run([f"{base_directory}/pre_process_src/1_filter.sh", f"{input_folder}/raw", f"{input_folder}/filtered"])
+    run([f"{base_directory}/pre_process_src/2_pcap_splitting.sh", f"{input_folder}/filtered", f"{input_folder}/split"])
+    run([f"{base_directory}/pre_process_src/3_extract_fields.sh", f"{input_folder}/split", f"{input_folder}/extracted", "1" if args.tcp_options else ""])
 
     for folder_name in os.listdir(f"{input_folder}/extracted"):
         full_folder_name = os.path.join(f"{input_folder}/extracted", folder_name)
         os.makedirs(os.path.join(f"{input_folder}/final/shards", folder_name), exist_ok=True)
-        run(["python3", f"{base_directory}/src/pre_process/Tokenize.py", "--conf_file", args.tokenizer_config,
+        run(["python3", f"{base_directory}/pre_process_src/Tokenize.py", "--conf_file", args.tokenizer_config,
              "--input_dir", full_folder_name, "--output_dir",
              os.path.join(f"{input_folder}/final/shards", folder_name)])
         if args.combined:
             os.makedirs(os.path.join(f"{input_folder}/final", "combined"), exist_ok=True)
-            run(["python3", f"{base_directory}/src/pre_process/CollectTokensInFiles.py",
+            run(["python3", f"{base_directory}/pre_process_src/CollectTokensInFiles.py",
                  os.path.join(f"{input_folder}/final/shards", folder_name),
                  os.path.join(f"{input_folder}/final/combined", f"{folder_name}.arrow")])
 
@@ -67,22 +67,22 @@ def preprocess_finetune(args):
     for label in os.listdir(f"{input_folder}/raw"):
         for stage_name in ["filtered", "split", "extracted", "final/shards"]:
             os.makedirs(os.path.join(input_folder, stage_name, label), exist_ok=True)
-        run([f"{base_directory}/src/pre_process/1_filter.sh", f"{input_folder}/raw/{label}",
+        run([f"{base_directory}/pre_process_src/1_filter.sh", f"{input_folder}/raw/{label}",
              f"{input_folder}/filtered/{label}"])
-        run([f"{base_directory}/src/pre_process/2_pcap_splitting.sh", f"{input_folder}/filtered/{label}",
+        run([f"{base_directory}/pre_process_src/2_pcap_splitting.sh", f"{input_folder}/filtered/{label}",
              f"{input_folder}/split/{label}"])
-        run([f"{base_directory}/src/pre_process/3_extract_fields.sh", f"{input_folder}/split/{label}",
+        run([f"{base_directory}/pre_process_src/3_extract_fields.sh", f"{input_folder}/split/{label}",
              f"{input_folder}/extracted/{label}", "1" if args.tcp_options else ""])
 
         for folder_name in os.listdir(f"{input_folder}/extracted/{label}"):
             full_folder_name = os.path.join(f"{input_folder}/extracted/{label}", folder_name)
             os.makedirs(os.path.join(f"{input_folder}/final/shards/{label}", folder_name), exist_ok=True)
-            run(["python3", f"{base_directory}/src/pre_process/Tokenize.py", "--conf_file", args.tokenizer_config,
+            run(["python3", f"{base_directory}/pre_process_src/Tokenize.py", "--conf_file", args.tokenizer_config,
                  "--input_dir", full_folder_name, "--output_dir",
                  os.path.join(f"{input_folder}/final/shards/{label}", folder_name), '--label', label])
             if args.combined:
                 os.makedirs(os.path.join(f"{input_folder}/final", "combined"), exist_ok=True)
-                run(["python3", f"{base_directory}/src/pre_process/CollectTokensInFiles.py",
+                run(["python3", f"{base_directory}/pre_process_src/CollectTokensInFiles.py",
                      os.path.join(f"{input_folder}/final/shards/{label}", folder_name),
                      os.path.join(f"{input_folder}/final/combined", f"{label}_{folder_name}.arrow")])
 

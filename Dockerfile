@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.7.1-cuda11.8-cudnn9-devel
+FROM pytorch/pytorch:2.9.1-cuda12.8-cudnn9-devel
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get upgrade -y && \
