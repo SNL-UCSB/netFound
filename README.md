@@ -22,7 +22,15 @@ We provide three different checkpoint sizes:
 
 You can provide the checkpoints with the corresponding `--size` flag: `small`, `base`, or `large`.
 
-These checkpoints are pretrained on ~10bln tokens of the real-world network traffic of the University of California, Santa Barbara.  
+These checkpoints are pretrained on ~10bln tokens of the real-world network traffic of the University of California, Santa Barbara. 
+
+## Pretraining Data
+We publish the whole pretraining dataset used for netFound which contains 4 billions network flows cleaned and preprocessed into netFound arrow format (total size: 1.2Tb). This data is suitable for pretraining of netFound or any other model utilizing the similar (to netFound) tokenizer. The data does not contain IP addresses, payload, or any deanonimization information.   
+
+The full dataset is available for download here: https://snl-server-1.cs.ucsb.edu/dataset/netfound/  
+
+We also publish a 16Gb (60mln flows) sampler of the dataset on Zenodo platform to let researchers try the dataset and facilitate data distribution, which is available here: https://zenodo.org/records/19863446
+
 
 ## :rocket: Quick Start: Running netFound with Docker & Makefile 
 The *easiest way* to verify that the *preprocessing code and model work correctly* is to use the *provided Dockerfile and Makefile*. This setup ensures a *reproducible environment* with all dependencies installed and includes a *small test dataset* to validate the pipeline. 
