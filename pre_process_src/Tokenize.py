@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import sys
+
 from os.path import join
 from multiprocessing import Pool
 from typing import Optional, List, Tuple
@@ -512,6 +514,10 @@ if __name__ == "__main__":
                 raise ValueError(f"TCP options are disabled, but file {filepath} has tcp options")
 
     print(f"Total files: {len(args)}")
+
+    if len(args) == 0:
+        print(f"No valid tokenizable files found in {input_dir}. Skipping directory.")
+        sys.exit(0)
 
     cores = script_args.cores
     if cores == 0:

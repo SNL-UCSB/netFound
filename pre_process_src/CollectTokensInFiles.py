@@ -9,6 +9,10 @@ def merge_arrow_files(input_folder, output_file):
     input_files = [os.path.join(input_folder, f) for f in os.listdir(input_folder) if f.endswith('.arrow')]
     print(f"Found {len(input_files)} Arrow files in the folder.")
 
+    if len(input_files) == 0:
+        print(f"No arrow files found in {input_folder}. Skipping directory.")
+        return
+
     # get schema
     first_file = input_files[0]
     with pa.memory_map(first_file, 'r') as source:
