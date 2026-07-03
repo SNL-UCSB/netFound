@@ -1,5 +1,6 @@
 import dataclasses
 import datasets
+datasets.disable_caching()
 import transformers
 import logging
 import os
@@ -12,6 +13,8 @@ import time
 import socket
 import psutil
 import inspect
+import csv
+import io
 
 from collections import defaultdict
 from typing import Any, Iterable, Optional, Set, Tuple
@@ -21,6 +24,7 @@ from torch.profiler import profile, schedule, ProfilerActivity
 from transformers import TrainerCallback
 from transformers.trainer_utils import get_last_checkpoint
 from datasets import load_dataset
+
 
 LOGGING_LEVEL = logging.WARNING
 TB_WRITER: Optional[SummaryWriter] = None
@@ -336,15 +340,26 @@ def init_tbwriter(output_dir=".") -> None:
 
 
 def get_gpu_utilization(gpu_id):
-    """Fetch GPU utilization using nvidia-smi for the given GPU."""
+    """Fetch GPU utilization using smi for the given GPU."""
     try:
-        result = subprocess.run(
-            ["nvidia-smi", f"--query-gpu=utilization.gpu", "--format=csv,noheader,nounits", f"--id={gpu_id}"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        utilization = int(result.stdout.strip())
+        if torch.version.hip is not None:
+            result = subprocess.run(
+                ["amd-smi", "metric", "-g", str(gpu_id), "-u", "--csv"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            reader = csv.DictReader(io.StringIO(result.stdout))
+            row = next(reader)
+            utilization = int(row["gfx_activity"])
+        else:
+            result = subprocess.run(
+                ["nvidia-smi", f"--query-gpu=utilization.gpu", "--format=csv,noheader,nounits", f"--id={gpu_id}"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            utilization = int(result.stdout.strip())
         return utilization
     except Exception as e:
         get_logger(__name__).error(f"Error fetching GPU utilization: {e}")

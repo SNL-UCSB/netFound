@@ -1,47 +1,50 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 # reimports to keep things in the same place
 from transformers.models.roformer.modeling_roformer import RoFormerAttention  # noqa: F401
 from transformers.models.roberta.modeling_roberta import RobertaAttention  # noqa: F401
 
-try:
-    from flash_attn.modules.mha import MHA as FlashMHA
-    from flash_attn.bert_padding import unpad_input, pad_input
+class SDPAMHA(nn.Module):
+    def __init__(self, embed_dim, num_heads, dropout=0.0, causal=False, bias=True):
+        super().__init__()
+        assert embed_dim % num_heads == 0
+        self.num_heads = num_heads
+        self.head_dim = embed_dim // num_heads
+        self.causal = causal
+        self.dropout_p = dropout
+        self.Wqkv = nn.Linear(embed_dim, 3 * embed_dim, bias=bias)
+        self.out_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
 
-    _FLASH_AVAILABLE = True
-except Exception:
-    FlashMHA = None
-    _FLASH_AVAILABLE = False
+    def forward(self, x, attn_mask=None):
+        B, N, C = x.shape
+        qkv = self.Wqkv(x).reshape(B, N, 3, self.num_heads, self.head_dim)
+        q, k, v = qkv.unbind(dim=2)
+        q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
+        out = F.scaled_dot_product_attention(
+            q, k, v, attn_mask=attn_mask,
+            dropout_p=self.dropout_p if self.training else 0.0,
+            is_causal=self.causal,
+        )
+        out = out.transpose(1, 2).reshape(B, N, C)
+        return self.out_proj(out)
 
 
 class FlashSelfAttention(nn.Module):
-    """
-    Implementation of FlashAttention with unpadding for speedup.
-    """
+    """Drop-in replacement — same interface as the flash_attn-based version,
+    portable across CUDA and ROCm via SDPA."""
     def __init__(self, config, use_rotary=False):
         super().__init__()
-        if not _FLASH_AVAILABLE or not torch.cuda.is_available():
-            raise RuntimeError("FlashAttention not available or CUDA is missing")
-        self.attn = FlashMHA(
+        if not torch.cuda.is_available():
+            raise RuntimeError("This attention module requires a CUDA/ROCm-capable device")
+        self.attn = SDPAMHA(
             embed_dim=config.hidden_size,
             num_heads=config.num_attention_heads,
             dropout=config.attention_probs_dropout_prob,
             causal=config.is_decoder,
-            rotary_emb_dim=0,
-            use_flash_attn=True,
         )
 
     def forward(self, hidden_states, attention_mask=None, **kwargs):
-        if attention_mask is not None:
-            # HF extended mask: 0 keep, -inf mask; convert to bool padding mask
-            key_padding_mask = attention_mask.squeeze(1).squeeze(1) >= 0
-            # flatten to unpadded representation
-            hidden_unpad, indices, cu_seqlens, max_seqlen, seqused = unpad_input(hidden_states, key_padding_mask)
-            out_unpad = self.attn(hidden_unpad, cu_seqlens=cu_seqlens, max_seqlen=max_seqlen)
-            # restore padded layout
-            output = pad_input(out_unpad, indices, batch=hidden_states.size(0), seqlen=key_padding_mask.shape[1])
-        else:
-            output = self.attn(hidden_states)
-        # FlashAttention kernel does not return attention maps
+        output = self.attn(hidden_states, attn_mask=attention_mask)
         return (output, None)

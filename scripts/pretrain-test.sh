@@ -6,7 +6,7 @@ python \
     --output_dir models/test/pretraining/pretrained_model \
     --report_to tensorboard \
     --do_train \
-    --num_train_epochs 3 \
+    --num_train_epochs 100 \
     --overwrite_output_dir \
     --learning_rate 2e-5 \
     --size small \

@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.9.1-cuda12.8-cudnn9-devel
+FROM rocm/pytorch:rocm7.2.4_ubuntu24.04_py3.12_pytorch_release_2.9.1
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get upgrade -y && \
@@ -8,7 +8,7 @@ RUN apt-get update && apt-get upgrade -y && \
     wget \
     graphviz \
     parallel \
-    nano make cmake g++ \
+    nano vim make cmake g++ \
     libpcap-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
